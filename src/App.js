@@ -1,24 +1,67 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import axios from "axios";
 import './App.css';
+import Definicion from './components/Definicion';
+import Sinonimos from './components/Sinonimos';
+import Antonimos from './components/Antonimos';
 
-function App() {
+const App = () => {
+
+  const [palabra, setPalabra] = useState('');
+
+  const [definiciones, setDefiniciones] = useState(null);
+  const [sinonimos, setSinonimos] = useState(null);
+  const [antonimos, setAntonimos] = useState(null);
+
+
+  const endpoint = 'http://sesat.fdi.ucm.es:8080/servicios/rest';
+  
+
+  useEffect(() => {
+      if (palabra !== '') {
+
+        const definitionEndpoint = `${endpoint}/definicion/json/${palabra}`;
+        const sinonimosEndpoint = `${endpoint}/sinonimos/json/${palabra}`;
+        const antonimosEndpoint = `${endpoint}/antonimos/json/${palabra}`;
+
+        axios.get(definitionEndpoint)
+          .then((response) => {
+              console.log(response.data.definiciones);
+              setDefiniciones(response.data.definiciones);
+          });
+        
+        axios.get(sinonimosEndpoint)
+          .then((response) => {
+              console.log(response.data.sinonimos);
+              setSinonimos(response.data.sinonimos);
+          });
+
+        axios.get(antonimosEndpoint)
+          .then((response) => {
+              console.log(response.data.antonimos);
+              setAntonimos(response.data.antonimos);
+          });
+      }else{
+        setDefiniciones(null);
+        setSinonimos(null);
+        setAntonimos(null);
+      }
+  }, [palabra]);
+
+  const handleSearch = (searchValue) => {
+    setPalabra(searchValue);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Diccionario</h1>
+      <input id="searchValue" type="text" placeholder="Introduzca una palabra!" />
+      <button onClick={() => handleSearch(document.getElementById("searchValue").value)}>
+          Buscar
+      </button>
+      {definiciones ? <Definicion content={definiciones}></Definicion> : null}
+      {sinonimos ? <Sinonimos content={sinonimos}></Sinonimos> : null}
+      {antonimos ? <Antonimos content={antonimos}></Antonimos> : null}
     </div>
   );
 }
